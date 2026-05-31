@@ -7,13 +7,12 @@ import {
   findVerifyCodeByEmail,
   deleteVerifyCodeByEmail,
   updateUserPassword,
-  createSession,
-  findSessionByToken,
 } from '../repositories/auth.repository.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import redisClient from '../config/redisClient.js';
 const usernameRegex = /^[A-Za-z0-9_]{8,30}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -127,7 +126,10 @@ export const login = async (data: LoginInput) => {
     user = await findUserByUsername(input);
   }
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new Error('Account not found');
+  }
+  if (!user.password) {
+    throw new Error('Please sign in using Google');
   }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
@@ -141,11 +143,12 @@ export const login = async (data: LoginInput) => {
   const refreshToken = jwt.sign({ userId: user.id }, env.JWT_REFRESH_SECRET, {
     expiresIn: '7d',
   });
-  await createSession(
-    user.id,
-    refreshToken,
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  );
+  const redisKey = `session:${refreshToken}`;
+  const sessionData = {
+    userId: user.id,
+    role: user.role
+  };
+  await redisClient.setEx(redisKey, 604800, JSON.stringify(sessionData));
   return { accessToken, refreshToken };
 };
 export const reset = async (data: ResetInput) => {
@@ -189,7 +192,12 @@ export const refreshToken = async (token: string) => {
   } catch {
     throw new Error('Invalid refresh token');
   }
-  const session = await findSessionByToken(token);
+  const redisKey = `session:${token}`;
+  const sessionData = await redisClient.get(redisKey);
+  if (!sessionData) {
+    throw new Error('Session not found or expired');
+  }
+  const session = JSON.parse(sessionData);
   if (!session) {
     throw new Error('Session not found');
   }

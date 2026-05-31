@@ -85,7 +85,7 @@ export const useTasks = () => {
     } finally {
       setLoadingSearch(false);
     }
-  },[]);
+  }, []);
   useEffect(() => {
     fetchTasks();
   }, []);
