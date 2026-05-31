@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import { env } from './config/env.js';
+import { initCleanupCron } from './cron/taskCleanup.js';
+import passport from './config/passport.js';
 import authRoutes from './routes/auth.routes.js';
 import taskRoutes from './routes/task.routes.js';
 import userRoutes from './routes/user.routes.js';
@@ -14,14 +16,16 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(passport.initialize());
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes);
-app.listen(env.PORT, () => {
-  console.log(`Server is running on port ${env.PORT}`);
-  console.log('ENV URL:', process.env.DATABASE_URL);
-  console.log('TYPE:', typeof process.env.DATABASE_URL);
-});
 app.get('/', (req, res) => {
   res.send('Serenity API is running');
+});
+initCleanupCron();
+app.listen(env.PORT, () => {
+  console.log(`Server is running on port ${env.PORT}`);
+  console.log('ENV URL:', env.DATABASE_URL);
+  console.log('TYPE:', typeof env.DATABASE_URL);
 });

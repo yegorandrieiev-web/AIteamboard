@@ -31,7 +31,7 @@ export const TasksPage = () => {
     } else {
       setUsers([]);
     }
-  }, [debouncedAssignedTo,setUsers,doSearch]);
+  }, [debouncedAssignedTo, setUsers, doSearch]);
   // 🔹 создание задачи
   const handleCreate = async () => {
     if (!title || !assignedTo) return;
