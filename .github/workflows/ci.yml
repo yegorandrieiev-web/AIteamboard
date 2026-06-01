@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+      - feat/**
+
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies (Prettier)
+        run: npm install
+
+      - name: Run Prettier check
+        run: npm run format -- --check
+
+      - name: Install backend deps
+        run: |
+          cd server
+          npm install
+
+      - name: Run backend lint
+        run: |
+          cd server
+          npm run lint
+
+      - name: Build backend
+        run: |
+          cd server
+          npm run build
+
+      - name: Install frontend deps
+        run: |
+          cd client
+          npm install
+
+      - name: Run frontend lint
+        run: |
+          cd client
+          npm run lint
+
+      - name: Build frontend
+        run: |
+          cd client
+          npm run build
