@@ -76,7 +76,7 @@ export const register = async (data: RegisterInput) => {
   const { username, email, password, verificationCode } = data;
 
   if (!username || !email || !password || !verificationCode) {
-    throw new Error('All fields are required');
+    throw new Error('All fields are required!');
   }
 
   if (!usernameRegex.test(username)) {
@@ -146,7 +146,7 @@ export const login = async (data: LoginInput) => {
   const redisKey = `session:${refreshToken}`;
   const sessionData = {
     userId: user.id,
-    role: user.role
+    role: user.role,
   };
   await redisClient.setEx(redisKey, 604800, JSON.stringify(sessionData));
   return { accessToken, refreshToken };

@@ -25,19 +25,21 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install root dependencies
+      - name: Install root dependencies (Prettier)
         run: npm install
 
       - name: Run Prettier check
         run: npm run format -- --check
 
-      - name: Run global ESLint check
-        run: npm run lint
-
       - name: Install backend deps
         run: |
           cd server
           npm install
+
+      - name: Run backend lint
+        run: |
+          cd server
+          npm run lint
 
       - name: Build backend
         run: |
@@ -49,7 +51,16 @@ jobs:
           cd client
           npm install
 
+      - name: Run frontend lint
+        run: |
+          cd client
+          npm run lint
+
       - name: Build frontend
         run: |
           cd client
           npm run build
+
+      - name: Build Docker Images (Backend & Frontend)
+        run: |
+          docker compose build --no-cache
