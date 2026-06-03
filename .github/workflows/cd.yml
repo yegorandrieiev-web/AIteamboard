@@ -1,0 +1,23 @@
+name: Continuous Deployment (CD)
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    # Говорим гитхабу запускать команды именно на локальном раннере
+    runs-on: self-hosted
+    steps:
+      # Шаг 1: Скачиваем свежий код из репозитория в рабочую папку раннера (_work)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      # Шаг 2: Копируем файлы в нашу системную папку сервера /var/www/soulbit
+      - name: Copy files to web directory
+        run: |
+          sudo cp -r . /var/www/soulbit/
+          cd /var/www/soulbit/
+      - name: Deploy with Docker Compose
+        run: |
+          cd /var/www/soulbit/
+          docker compose down --remove-orphans
+          docker compose up --build -d
