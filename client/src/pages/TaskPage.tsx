@@ -44,7 +44,6 @@ export const TasksPage = () => {
     setTitle('');
     setDescription('');
     setAssignedTo('');
-    console.log("Added task!");
   };
   if (authLoading || !user?.id) {
     return <div></div>;
