@@ -41,10 +41,10 @@ export const TasksPage = () => {
       description,
       assignedTo,
     });
-
     setTitle('');
     setDescription('');
     setAssignedTo('');
+    console.log("Added task!");
   };
   if (authLoading || !user?.id) {
     return <div></div>;
