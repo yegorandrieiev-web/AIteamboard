@@ -5,6 +5,7 @@ import { useLogin } from '../features/auth/hooks/useLogin';
 import { useNavigate } from 'react-router-dom';
 
 export const LoginPage = () => {
+  const BASE_URL = import.meta.env.VITE_API_URL;
   const [input, setInput] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export const LoginPage = () => {
     }
   };
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    window.location.href = `${BASE_URL}/auth/google`;
   };
   return (
     <div style={styles.wrapper}>
