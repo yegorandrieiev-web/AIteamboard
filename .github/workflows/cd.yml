@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-
+    environment: production
     steps:
       # Скачиваем код из репозитория в рабочую папку раннера (_work)
       - name: Checkout repository
