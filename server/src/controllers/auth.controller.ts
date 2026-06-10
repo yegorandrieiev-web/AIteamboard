@@ -6,9 +6,7 @@ import {
   reset,
   refreshToken,
 } from '../services/auth.service.js';
-import {
-  findUserById,
-} from '../repositories/auth.repository.js';
+import { findUserById } from '../repositories/auth.repository.js';
 import redisClient from '../config/redisClient.js';
 export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
@@ -108,9 +106,9 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     const newAccessToken = await refreshToken(token);
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
-      secure: false, 
+      secure: false,
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, 
+      maxAge: 15 * 60 * 1000,
     });
     return res.json({ success: true });
   } catch (err: any) {
@@ -124,10 +122,10 @@ export const logout = async (req: Request, res: Response) => {
       const redisKey = `session:${token}`;
       await redisClient.del(redisKey);
     }
-  } catch (err: any) {
-  } finally {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
-    return res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Redis logout error:', error);
   }
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+  return res.json({ success: true });
 };

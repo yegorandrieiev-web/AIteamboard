@@ -51,7 +51,7 @@ export const updateTaskStatusController = async (
     const userId = (req as any).user.userId;
     const { id } = req.params;
     const { status } = req.body;
-    const task = await updateTaskStatus(userId, id, status);
+    await updateTaskStatus(userId, id, status);
     res.json({ success: true });
   } catch (error: any) {
     res.status(400).json({ error: error.message });

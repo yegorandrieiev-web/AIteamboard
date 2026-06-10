@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
   res.send('Serenity API is running');
 });
 initCleanupCron();
-app.listen(env.PORT,'0.0.0.0', () => {
+app.listen(env.PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${env.PORT}`);
   console.log('ENV URL:', env.DATABASE_URL);
   console.log('TYPE:', typeof env.DATABASE_URL);

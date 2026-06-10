@@ -5,20 +5,14 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores([
-    'dist', 
-    'src/generated/**'
-  ]),
+  globalIgnores(['dist', 'src/generated/**']),
 
   {
     files: ['**/*.ts'],
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-    ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
 
     languageOptions: {
-      ecmaVersion: 2022, 
+      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         ...globals.node,
@@ -27,11 +21,14 @@ export default defineConfig([
 
     rules: {
       // Превращаем неиспользуемые переменные в предупреждения (чтобы не спамить ошибками при разработке)
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-require-imports': 'error',
-      'no-console': 'off', 
+      'no-console': 'off',
     },
   },
   eslintConfigPrettier,
