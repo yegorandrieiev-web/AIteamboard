@@ -8,8 +8,8 @@ import {
 } from '../services/auth.service.js';
 import {
   findUserById,
-  deleteSession,
 } from '../repositories/auth.repository.js';
+import redisClient from '../config/redisClient.js';
 export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
     const { email, reset } = req.body;
@@ -102,30 +102,32 @@ export const getMeRequest = async (req: Request, res: Response) => {
 export const refreshTokenController = async (req: Request, res: Response) => {
   try {
     const token = req.cookies.refreshToken;
-
     if (!token) {
       return res.status(401).json({ error: 'No token' });
     }
-
     const newAccessToken = await refreshToken(token);
-
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
-      secure: false,
+      secure: false, 
       sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, 
     });
-
     return res.json({ success: true });
   } catch (err: any) {
     return res.status(401).json({ error: err.message });
   }
 };
 export const logout = async (req: Request, res: Response) => {
-  const token = req.cookies.refreshToken;
-  if (token) {
-    await deleteSession(token);
+  try {
+    const token = req.cookies.refreshToken;
+    if (token) {
+      const redisKey = `session:${token}`;
+      await redisClient.del(redisKey);
+    }
+  } catch (err: any) {
+  } finally {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    return res.json({ success: true });
   }
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
-  res.json({ success: true });
 };

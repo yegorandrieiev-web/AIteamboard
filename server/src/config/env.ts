@@ -12,4 +12,5 @@ export const env = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || '',
   SESSION_SECRET: process.env.SESSION_SECRET || '',
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
 };

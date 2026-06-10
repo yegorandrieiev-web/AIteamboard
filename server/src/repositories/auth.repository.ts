@@ -88,20 +88,3 @@ export const createSession = async (
     },
   });
 };
-export const findSessionByToken = async (token: string) => {
-  return prisma.session.findFirst({
-    where: {
-      refreshToken: token,
-    },
-    include: {
-      user: true,
-    },
-  });
-};
-export const deleteSession = async (token: string) => {
-  return prisma.session.deleteMany({
-    where: {
-      refreshToken: token,
-    },
-  });
-};

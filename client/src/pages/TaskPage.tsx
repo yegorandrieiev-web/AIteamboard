@@ -3,6 +3,7 @@ import { useTasks } from '../features/tasks/hooks/useTasks';
 import { TasksList } from '../features/tasks/components/TaskList';
 import { useAuth } from '../shared/hooks/useAuth';
 import { useDebounce } from '../shared/hooks/useDebounce';
+import { request } from '../shared/api/client';
 import './TasksPage.css';
 export const TasksPage = () => {
   const {
@@ -21,6 +22,8 @@ export const TasksPage = () => {
   const { user, loading: authLoading } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
   const debouncedAssignedTo = useDebounce(assignedTo, 500);
   const isUserSelected = users.some((u) => u.username === assignedTo);
@@ -35,7 +38,6 @@ export const TasksPage = () => {
   // 🔹 создание задачи
   const handleCreate = async () => {
     if (!title || !assignedTo) return;
-
     await createTask({
       title,
       description,
@@ -45,6 +47,48 @@ export const TasksPage = () => {
     setDescription('');
     setAssignedTo('');
     console.log("Added task!");
+  };
+  const checkAiLimit = (): { allowed: boolean; remaining: number } => {
+      const now = Date.now();
+      const limitData = localStorage.getItem('ai_generation_limits');
+      if (!limitData) {
+        const newData = { count: 1, resetTime: now + 15 * 60 * 1000 };
+        localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
+        return { allowed: true, remaining: 4 };
+      }
+      const { count, resetTime } = JSON.parse(limitData);
+      if (now > resetTime) {
+        const newData = { count: 1, resetTime: now + 15 * 60 * 1000 };
+        localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
+        return { allowed: true, remaining: 4 };
+      }
+      if (count >= 5) {
+        return { allowed: false, remaining: 0 };
+      }
+      const newData = { count: count + 1, resetTime };
+      localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
+      return { allowed: true, remaining: 5 - (count + 1) };
+  };
+  const handleGenerateDescription = async () => {
+    setAiError('');
+    const limit = checkAiLimit();
+    if (!limit.allowed) {
+      setAiError('Rate limit exceeded: 5 generations in 15 minutes. Please try again later.');
+      return;
+    }
+    try {
+      setIsGenerating(true);
+      const data = await request(`/ai/generate-description`,{method: 'POST', body:JSON.stringify({taskTitle: title})});
+      if (!data) {
+        throw new Error(data.error || 'Failed to generate');
+      }
+      setDescription(data.description);
+    } catch (error: any) {
+      console.error('AI Generation Error:', error);
+      setAiError(error.message || 'Generation error');
+    } finally {
+      setIsGenerating(false);
+    }
   };
   if (authLoading || !user?.id) {
     return <div></div>;
@@ -62,14 +106,26 @@ export const TasksPage = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
-
-            <input
-              style={styles.input}
+           <textarea
+              style={{ ...styles.input, resize: 'none' }}
               placeholder="Description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              rows={5}
             />
-
+            {title.trim().length > 8 && (
+              <button
+                onClick={handleGenerateDescription}
+                disabled={isGenerating}
+                style={{
+                  ...styles.aiButton,
+                  backgroundColor: isGenerating ? '#d2e3fc' : '#1a73e8',
+                }}
+              >
+                {isGenerating ? 'Generating...' : 'Generate Description'}
+              </button>
+            )}
+            {aiError && title.trim().length > 8 && <span style={styles.errorText}>{aiError}</span>}
             <input
               style={styles.input}
               placeholder="Assign to username"
@@ -78,11 +134,10 @@ export const TasksPage = () => {
               onChange={(e) => setAssignedTo(e.target.value)}
             />
             {assignedTo.length > 0 && !isUserSelected && (
-              <div style={styles.dropdown}>
+              <div style={{...styles.dropdown,top: (title.trim().length > 8 && !aiError) ? '82%' : aiError ? "83.2%" : "79%",}}>
                 {users.length === 0 && (
                   <div style={styles.dropdownItem}>Nothing found</div>
                 )}
-
                 {!loadingSearch &&
                   users.map((user) => (
                     <div
@@ -168,6 +223,22 @@ const styles = {
     border: '1px solid #ddd',
     fontSize: '14px',
   },
+  aiButton: {
+    alignSelf: 'flex-end',
+    padding: '6px 12px',
+    borderRadius: '4px',
+    border: 'none',
+    color: '#fff',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
+  errorText: {
+    color: '#ff4d4d',
+    fontSize: '12px',
+    textAlign: 'right' as const,
+  },
   button: {
     padding: '10px',
     borderRadius: '6px',
@@ -190,7 +261,6 @@ const styles = {
   },
   dropdown: {
     position: 'absolute' as const,
-    top: '70%',
     left: 0,
     right: 0,
     background: '#fff',
