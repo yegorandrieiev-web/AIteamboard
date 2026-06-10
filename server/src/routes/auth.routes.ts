@@ -9,19 +9,19 @@ import {
   logout,
 } from '../controllers/auth.controller.js';
 import {
-  authLimiter,
+  min15Limiter,
   codeLimiter,
 } from '../middleware/rateLimit.middleware.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import { createSession } from '../repositories/auth.repository.js';
 import { env } from '../config/env.js';
+import redisClient from '../config/redisClient.js';
 const router = Router();
 router.post('/send-code', codeLimiter, sendVerificationCode);
-router.post('/register', authLimiter, registerUser);
-router.post('/login', authLimiter, loginUser);
-router.post('/reset-password', authLimiter, resetPassword);
+router.post('/register', min15Limiter, registerUser);
+router.post('/login', min15Limiter, loginUser);
+router.post('/reset-password', min15Limiter, resetPassword);
 router.get('/me', authMiddleware, getMeRequest);
 router.post('/refresh', refreshTokenController);
 router.post('/logout', logout);
@@ -48,11 +48,17 @@ router.get(
         env.JWT_REFRESH_SECRET,
         { expiresIn: '7d' },
       );
-      await createSession(
-        user.id,
-        refreshToken,
-        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      );
+      const redisKey = `session:${refreshToken}`;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      const sessionData = {
+        user: {
+          id: user.id,
+          role: user.role,
+        },
+        expiresAt: expiresAt.toISOString(),
+      };
+      await redisClient.setEx(redisKey, 604800, JSON.stringify(sessionData));
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: false,

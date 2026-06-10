@@ -144,9 +144,14 @@ export const login = async (data: LoginInput) => {
     expiresIn: '7d',
   });
   const redisKey = `session:${refreshToken}`;
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7);
   const sessionData = {
-    userId: user.id,
-    role: user.role,
+    user: {
+      id: user.id,
+      role: user.role,
+    },
+    expiresAt: expiresAt.toISOString(),
   };
   await redisClient.setEx(redisKey, 604800, JSON.stringify(sessionData));
   return { accessToken, refreshToken };
@@ -189,7 +194,7 @@ export const refreshToken = async (token: string) => {
   let decoded: any;
   try {
     decoded = jwt.verify(token, env.JWT_REFRESH_SECRET);
-  } catch {
+  } catch (jwtErr: any) {
     throw new Error('Invalid refresh token');
   }
   const redisKey = `session:${token}`;
@@ -197,11 +202,19 @@ export const refreshToken = async (token: string) => {
   if (!sessionData) {
     throw new Error('Session not found or expired');
   }
-  const session = JSON.parse(sessionData);
-  if (!session) {
-    throw new Error('Session not found');
+  let session;
+  try {
+    session = JSON.parse(sessionData);
+  } catch (parseErr) {
+    throw new Error('Session data is corrupted');
   }
-  if (session.expiresAt < new Date()) {
+  if (!session || !session.user || !session.expiresAt) {
+    throw new Error('Session structure is invalid');
+  }
+  const serverTime = new Date();
+  const sessionExpiresAt = new Date(session.expiresAt);
+  const diffInMs = sessionExpiresAt.getTime() - serverTime.getTime();
+  if (diffInMs < 0) {
     throw new Error('Session expired');
   }
   const newAccessToken = jwt.sign(
