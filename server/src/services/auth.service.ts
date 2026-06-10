@@ -194,8 +194,8 @@ export const refreshToken = async (token: string) => {
   let decoded: any;
   try {
     decoded = jwt.verify(token, env.JWT_REFRESH_SECRET);
-  } catch (jwtErr: any) {
-    throw new Error('Invalid refresh token');
+  } catch (jwtErr) {
+    throw new Error('Invalid refresh token', { cause: jwtErr });
   }
   const redisKey = `session:${token}`;
   const sessionData = await redisClient.get(redisKey);
@@ -206,7 +206,7 @@ export const refreshToken = async (token: string) => {
   try {
     session = JSON.parse(sessionData);
   } catch (parseErr) {
-    throw new Error('Session data is corrupted');
+    throw new Error('Session data is corrupted', { cause: parseErr });
   }
   if (!session || !session.user || !session.expiresAt) {
     throw new Error('Session structure is invalid');

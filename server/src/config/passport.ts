@@ -4,7 +4,6 @@ import { env } from './env.js';
 import {
   findUserByEmail,
   createUser,
-  findUserByUsername,
 } from '../repositories/auth.repository.js';
 passport.use(
   new GoogleStrategy(

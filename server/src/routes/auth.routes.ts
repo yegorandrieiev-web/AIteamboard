@@ -72,7 +72,7 @@ router.get(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       return res.redirect('http://localhost:5173/tasks');
-    } catch (error) {
+    } catch {
       return res.redirect('http://localhost:5173/login');
     }
   },

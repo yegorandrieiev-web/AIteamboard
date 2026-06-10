@@ -46,39 +46,44 @@ export const TasksPage = () => {
     setTitle('');
     setDescription('');
     setAssignedTo('');
-    console.log("Added task!");
+    console.log('Added task!');
   };
   const checkAiLimit = (): { allowed: boolean; remaining: number } => {
-      const now = Date.now();
-      const limitData = localStorage.getItem('ai_generation_limits');
-      if (!limitData) {
-        const newData = { count: 1, resetTime: now + 15 * 60 * 1000 };
-        localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
-        return { allowed: true, remaining: 4 };
-      }
-      const { count, resetTime } = JSON.parse(limitData);
-      if (now > resetTime) {
-        const newData = { count: 1, resetTime: now + 15 * 60 * 1000 };
-        localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
-        return { allowed: true, remaining: 4 };
-      }
-      if (count >= 5) {
-        return { allowed: false, remaining: 0 };
-      }
-      const newData = { count: count + 1, resetTime };
+    const now = Date.now();
+    const limitData = localStorage.getItem('ai_generation_limits');
+    if (!limitData) {
+      const newData = { count: 1, resetTime: now + 15 * 60 * 1000 };
       localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
-      return { allowed: true, remaining: 5 - (count + 1) };
+      return { allowed: true, remaining: 4 };
+    }
+    const { count, resetTime } = JSON.parse(limitData);
+    if (now > resetTime) {
+      const newData = { count: 1, resetTime: now + 15 * 60 * 1000 };
+      localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
+      return { allowed: true, remaining: 4 };
+    }
+    if (count >= 5) {
+      return { allowed: false, remaining: 0 };
+    }
+    const newData = { count: count + 1, resetTime };
+    localStorage.setItem('ai_generation_limits', JSON.stringify(newData));
+    return { allowed: true, remaining: 5 - (count + 1) };
   };
   const handleGenerateDescription = async () => {
     setAiError('');
     const limit = checkAiLimit();
     if (!limit.allowed) {
-      setAiError('Rate limit exceeded: 5 generations in 15 minutes. Please try again later.');
+      setAiError(
+        'Rate limit exceeded: 5 generations in 15 minutes. Please try again later.',
+      );
       return;
     }
     try {
       setIsGenerating(true);
-      const data = await request(`/ai/generate-description`,{method: 'POST', body:JSON.stringify({taskTitle: title})});
+      const data = await request(`/ai/generate-description`, {
+        method: 'POST',
+        body: JSON.stringify({ taskTitle: title }),
+      });
       if (!data) {
         throw new Error(data.error || 'Failed to generate');
       }
@@ -106,7 +111,7 @@ export const TasksPage = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
-           <textarea
+            <textarea
               style={{ ...styles.input, resize: 'none' }}
               placeholder="Description (optional)"
               value={description}
@@ -125,7 +130,9 @@ export const TasksPage = () => {
                 {isGenerating ? 'Generating...' : 'Generate Description'}
               </button>
             )}
-            {aiError && title.trim().length > 8 && <span style={styles.errorText}>{aiError}</span>}
+            {aiError && title.trim().length > 8 && (
+              <span style={styles.errorText}>{aiError}</span>
+            )}
             <input
               style={styles.input}
               placeholder="Assign to username"
@@ -134,7 +141,17 @@ export const TasksPage = () => {
               onChange={(e) => setAssignedTo(e.target.value)}
             />
             {assignedTo.length > 0 && !isUserSelected && (
-              <div style={{...styles.dropdown,top: (title.trim().length > 8 && !aiError) ? '82%' : aiError ? "83.2%" : "79%",}}>
+              <div
+                style={{
+                  ...styles.dropdown,
+                  top:
+                    title.trim().length > 8 && !aiError
+                      ? '82%'
+                      : aiError
+                        ? '83.2%'
+                        : '79%',
+                }}
+              >
                 {users.length === 0 && (
                   <div style={styles.dropdownItem}>Nothing found</div>
                 )}

@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
 let isRefreshing = false;
 let refreshSubscribers: (() => Promise<void>)[] = [];
-const subscribeTokenRefresh = (cb: () =>Promise<void>) => {
+const subscribeTokenRefresh = (cb: () => Promise<void>) => {
   refreshSubscribers.push(cb);
 };
 const onRefreshed = async () => {
@@ -9,8 +9,11 @@ const onRefreshed = async () => {
   refreshSubscribers = [];
   await Promise.all(promises);
 };
-export const request = async (url: string, options?: RequestInit): Promise<any> => {
-  let res = await fetch(`${BASE_URL}${url}`, {
+export const request = async (
+  url: string,
+  options?: RequestInit,
+): Promise<any> => {
+  const res = await fetch(`${BASE_URL}${url}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +42,7 @@ export const request = async (url: string, options?: RequestInit): Promise<any> 
       });
       if (refreshRes.ok) {
         isRefreshing = false;
-        onRefreshed(); 
+        onRefreshed();
         return await request(url, options);
       } else {
         isRefreshing = false;
@@ -47,7 +50,7 @@ export const request = async (url: string, options?: RequestInit): Promise<any> 
         window.location.href = '/';
         return;
       }
-    } catch (refreshErr) {
+    } catch {
       isRefreshing = false;
       refreshSubscribers = [];
       window.location.href = '/';

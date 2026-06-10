@@ -16,7 +16,7 @@ export const useTasks = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [error, setError] = useState('');
   const [users, setUsers] = useState<{ id: string; username: string }[]>([]);
-  const fetchTasks = useCallback(async() => {
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -30,7 +30,7 @@ export const useTasks = () => {
     } finally {
       setLoading(false);
     }
-  },[]);
+  }, []);
   const createTask = async (taskData: {
     title: string;
     description?: string;
