@@ -8,7 +8,7 @@ import {
 import { findUserByUsername } from '../repositories/auth.repository';
 import { TaskStatus } from '../generated/prisma/client.js';
 import redisClient from '../config/redisClient';
-
+import { addEmailJob } from '../queues/email.queue';
 const getTasksCacheKey = (userId: string) => `user:tasks:${userId}`;
 const checkCacheKeys = async (
   userId: string,
@@ -63,6 +63,9 @@ export const createTask = async (
     description: data.description,
     userId,
     assignedToUserId: assignedUser.id,
+  });
+  addEmailJob(assignedUser.email, data.title).catch((err) => {
+    console.log('Error adding email to queue', err);
   });
   await checkCacheKeys(userId, assignedUser.id);
   return newTask;
