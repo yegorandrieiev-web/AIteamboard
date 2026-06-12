@@ -10,12 +10,11 @@ import {
 } from '../repositories/auth.repository.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
-import { env } from '../config/env.js';
+import { env } from '../config/env';
 import redisClient from '../config/redisClient.js';
 const usernameRegex = /^[A-Za-z0-9_]{8,30}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+import { transporter } from '../config/mailer.js';
 type RegisterInput = {
   username: string;
   email: string;
@@ -31,16 +30,6 @@ type ResetInput = {
   password: string;
   verificationCode: string;
 };
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: env.EMAIL_USER,
-    pass: env.EMAIL_PASS,
-  },
-});
 const sendEmail = async (email: string, code: string) => {
   try {
     await transporter.sendMail({

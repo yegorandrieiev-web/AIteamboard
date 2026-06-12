@@ -8,6 +8,7 @@ import taskRoutes from './routes/task.routes';
 import userRoutes from './routes/user.routes';
 import aiRoutes from './routes/ai.routes';
 import cookieParser from 'cookie-parser';
+import { emailWorker } from './queues/email.worker';
 const app = express();
 app.use(
   cors({
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
   res.send('Serenity API is running');
 });
 initCleanupCron();
+emailWorker.resume();
 app.listen(env.PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${env.PORT}`);
   console.log('ENV URL:', env.DATABASE_URL);

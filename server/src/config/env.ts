@@ -4,6 +4,8 @@ export const env = {
   PORT: Number(process.env.PORT) || 5000,
   DATABASE_URL: process.env.DATABASE_URL || '',
   REDIS_URL: process.env.REDIS_URL || '',
+  REDIS_HOST: process.env.REDIS_HOST || '',
+  REDIS_PORT: process.env.REDIS_PORT || '',
   JWT_SECRET: process.env.JWT_SECRET || '',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || '',
   EMAIL_USER: process.env.EMAIL_USER || '',
