@@ -12,6 +12,6 @@ export const initCleanupCron = () => {
         },
       },
     });
-    console.log('Old tasks deleted');
+    console.log('All old tasks deleted');
   });
 };
