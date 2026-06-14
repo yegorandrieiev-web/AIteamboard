@@ -9,13 +9,20 @@ import userRoutes from './routes/user.routes';
 import aiRoutes from './routes/ai.routes';
 import cookieParser from 'cookie-parser';
 import { emailWorker } from './queues/email.worker';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@as-integrations/express5';
+import { typeDefs } from './graphql/schema';
+import { resolvers } from './graphql/resolvers';
 const app = express();
+const server = new ApolloServer({ typeDefs, resolvers });
+await server.start();
 app.use(
   cors({
     origin: 'http://localhost:5173',
     credentials: true,
   }),
 );
+app.use('/graphql', express.json(), expressMiddleware(server));
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());

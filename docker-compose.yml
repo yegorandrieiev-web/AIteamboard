@@ -20,8 +20,8 @@ services:
       - '5001:5000'
     depends_on:
       postgres:
-        condition: service_healthy 
-      redis: 
+        condition: service_healthy
+      redis:
         condition: service_started
     env_file:
       - ./server/.env
@@ -34,7 +34,7 @@ services:
     image: postgres:16
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d aiteamboard"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d aiteamboard']
       interval: 5s
       timeout: 5s
       retries: 5
