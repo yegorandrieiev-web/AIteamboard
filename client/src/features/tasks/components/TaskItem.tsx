@@ -9,6 +9,7 @@ type Props = {
 
 export const TaskItem = memo(
   ({ task, currentUserId, onDelete, onStatusChange }: Props) => {
+    const BASE_URL = import.meta.env.VITE_API_URL;
     const isOwner = currentUserId && task.userId === currentUserId;
     const isAssigned = currentUserId && task.assignedToUserId === currentUserId;
     const [owner, setOwner] = useState<string | null>(null);
@@ -16,9 +17,13 @@ export const TaskItem = memo(
     const fetchOwner = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('/graphql', {
+        const graphqlUrl = BASE_URL.replace('/api', ''); 
+        const response = await fetch(`${graphqlUrl}/graphql`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'credentials': 'include'
+          },
           body: JSON.stringify({
             query: `
               query GetTaskCreator($userId: ID!) {
@@ -67,7 +72,7 @@ export const TaskItem = memo(
                 disabled={isLoading}
                 style={styles.findButton}
               >
-                {isLoading ? '...' : 'Find owner'}
+                Find owner
               </button>
             )}
           </p>
@@ -105,6 +110,7 @@ const styles = {
   meta: {
     fontSize: '12px',
     color: '#999',
+    marginTop: '5px'
   },
   actions: {
     display: 'flex',
