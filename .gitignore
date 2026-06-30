@@ -1,25 +1,22 @@
-# --- Зависимости и сборка ---
-# Игнорирует node_modules во всех папках (root, server, client, worker)
+
 node_modules/
 dist/
 dist-ssr/
 build/
 *.local
 
-# --- Секреты (Критично!) ---
-# Скрывает все файлы .env во всех подпапках
+
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# --- Специфично для Prisma ---
-# Игнорируем сгенерированный клиент (указываем пути от корня)
+
 /server/src/generated/prisma
 /worker/src/generated/prisma
 
-# --- Логи ---
+
 logs
 *.log
 npm-debug.log*
@@ -28,7 +25,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# --- Настройки редактора и системы ---
+
 .vscode/*
 !.vscode/extensions.json
 .idea
